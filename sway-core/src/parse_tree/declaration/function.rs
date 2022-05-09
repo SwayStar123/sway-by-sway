@@ -13,7 +13,7 @@ use sway_types::{ident::Ident, span::Span};
 use pest::iterators::Pair;
 
 mod purity;
-pub use purity::Purity;
+pub use purity::{promote_purity, Purity};
 
 #[derive(Debug, Clone)]
 pub struct FunctionDeclaration {
@@ -50,7 +50,7 @@ impl FunctionDeclaration {
             .unwrap_or(false)
         {
             let _ = signature.next();
-            Purity::Impure
+            Purity::Reads // TODO: add attributes to parser instead of `impure` keywords.  Or not.
         } else {
             Purity::Pure
         };

@@ -10,35 +10,14 @@ pub mod item_struct;
 pub mod item_trait;
 pub mod item_use;
 
-pub struct Item {
-    pub attribute_list: Vec<AttributeDecl>,
-    pub kind: ItemKind,
-}
+pub type Item = Annotated<ItemKind>;
 
 impl Item {
     pub fn span(&self) -> Span {
         match self.attribute_list.first() {
-            Some(attr0) => Span::join(attr0.span(), self.kind.span()),
-            None => self.kind.span(),
+            Some(attr0) => Span::join(attr0.span(), self.value.span()),
+            None => self.value.span(),
         }
-    }
-}
-
-impl Parse for Item {
-    fn parse(parser: &mut Parser) -> ParseResult<Self> {
-        let mut attribute_list = Vec::new();
-        loop {
-            if parser.peek::<HashToken>().is_some() {
-                attribute_list.push(parser.parse()?);
-            } else {
-                break;
-            }
-        }
-        let kind = parser.parse()?;
-        Ok(Item {
-            attribute_list,
-            kind,
-        })
     }
 }
 
@@ -88,11 +67,7 @@ impl Parse for ItemKind {
             let item_enum = parser.parse()?;
             return Ok(ItemKind::Enum(item_enum));
         }
-        if parser.peek::<FnToken>().is_some()
-            || parser.peek2::<PubToken, FnToken>().is_some()
-            || parser.peek2::<ImpureToken, FnToken>().is_some()
-            || parser.peek3::<PubToken, ImpureToken, FnToken>().is_some()
-        {
+        if parser.peek::<FnToken>().is_some() || parser.peek2::<PubToken, FnToken>().is_some() {
             let item_fn = parser.parse()?;
             return Ok(ItemKind::Fn(item_fn));
         }
@@ -223,7 +198,6 @@ impl Parse for FnArg {
 #[derive(Clone, Debug)]
 pub struct FnSignature {
     pub visibility: Option<PubToken>,
-    pub impure: Option<ImpureToken>,
     pub fn_token: FnToken,
     pub name: Ident,
     pub generics: Option<GenericParams>,
@@ -236,10 +210,7 @@ impl FnSignature {
     pub fn span(&self) -> Span {
         let start = match &self.visibility {
             Some(pub_token) => pub_token.span(),
-            None => match &self.impure {
-                Some(impure_token) => impure_token.span(),
-                None => self.fn_token.span(),
-            },
+            None => self.fn_token.span(),
         };
         let end = match &self.where_clause_opt {
             Some(where_clause) => where_clause.span(),
@@ -255,7 +226,6 @@ impl FnSignature {
 impl Parse for FnSignature {
     fn parse(parser: &mut Parser) -> ParseResult<FnSignature> {
         let visibility = parser.take();
-        let impure = parser.take();
         let fn_token = parser.parse()?;
         let name = parser.parse()?;
         let generics = if parser.peek::<OpenAngleBracketToken>().is_some() {
@@ -280,7 +250,6 @@ impl Parse for FnSignature {
         };
         Ok(FnSignature {
             visibility,
-            impure,
             fn_token,
             name,
             generics,
@@ -320,7 +289,7 @@ mod tests {
             "#,
         );
 
-        assert!(matches!(item.kind, ItemKind::Fn(_)));
+        assert!(matches!(item.value, ItemKind::Fn(_)));
         assert!(item.attribute_list.is_empty());
     }
 
@@ -335,7 +304,7 @@ mod tests {
             "#,
         );
 
-        assert!(matches!(item.kind, ItemKind::Fn(_)));
+        assert!(matches!(item.value, ItemKind::Fn(_)));
 
         assert_eq!(item.attribute_list.len(), 1);
 
@@ -356,7 +325,7 @@ mod tests {
             "#,
         );
 
-        assert!(matches!(item.kind, ItemKind::Fn(_)));
+        assert!(matches!(item.value, ItemKind::Fn(_)));
 
         assert_eq!(item.attribute_list.len(), 2);
 
@@ -380,7 +349,7 @@ mod tests {
             "#,
         );
 
-        assert!(matches!(item.kind, ItemKind::Fn(_)));
+        assert!(matches!(item.value, ItemKind::Fn(_)));
 
         assert_eq!(item.attribute_list.len(), 1);
 
@@ -411,7 +380,7 @@ mod tests {
             "#,
         );
 
-        assert!(matches!(item.kind, ItemKind::Fn(_)));
+        assert!(matches!(item.value, ItemKind::Fn(_)));
 
         assert_eq!(item.attribute_list.len(), 1);
 
@@ -444,7 +413,7 @@ mod tests {
             "#,
         );
 
-        assert!(matches!(item.kind, ItemKind::Fn(_)));
+        assert!(matches!(item.value, ItemKind::Fn(_)));
 
         assert_eq!(item.attribute_list.len(), 2);
 
@@ -480,7 +449,7 @@ mod tests {
             "#,
         );
 
-        assert!(matches!(item.kind, ItemKind::Fn(_)));
+        assert!(matches!(item.value, ItemKind::Fn(_)));
 
         assert_eq!(item.attribute_list.len(), 2);
 
@@ -515,7 +484,7 @@ mod tests {
             "#,
         );
 
-        assert!(matches!(item.kind, ItemKind::Fn(_)));
+        assert!(matches!(item.value, ItemKind::Fn(_)));
 
         assert_eq!(item.attribute_list.len(), 1);
 
@@ -549,7 +518,7 @@ mod tests {
             "#,
         );
 
-        assert!(matches!(item.kind, ItemKind::Fn(_)));
+        assert!(matches!(item.value, ItemKind::Fn(_)));
 
         assert_eq!(item.attribute_list.len(), 3);
 

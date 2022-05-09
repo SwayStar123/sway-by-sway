@@ -1,6 +1,7 @@
 //! Tools related to handling/recovering from Sway compile errors and reporting them to the user.
 
 use crate::{
+    constants::STORAGE_PURITY_ATTRIBUTE_NAME,
     convert_parse_tree::ConvertParseTreeError,
     parser::Rule,
     style::{to_screaming_snake_case, to_snake_case, to_upper_camel_case},
@@ -876,8 +877,12 @@ pub enum CompileError {
         missing_patterns: String,
         span: Span,
     },
-    #[error("Impure function called inside of pure function. Pure functions can only call other pure functions. Try making the surrounding function impure by prepending \"impure\" to the function declaration.")]
-    PureCalledImpure { span: Span },
+    #[error(
+        "Impure function called inside of pure function. Pure functions can only call \
+        other pure functions. Try making the surrounding function impure by adding \
+        \"#[{STORAGE_PURITY_ATTRIBUTE_NAME}({attrs})]\" to the function declaration."
+    )]
+    PureCalledImpure { attrs: String, span: Span },
     #[error("Impure function inside of non-contract. Contract storage is only accessible from contracts.")]
     ImpureInNonContract { span: Span },
     #[error("Literal value is too large for type {ty}.")]

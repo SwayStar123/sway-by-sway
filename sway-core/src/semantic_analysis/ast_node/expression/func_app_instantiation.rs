@@ -1,10 +1,12 @@
-use crate::build_config::BuildConfig;
-use crate::control_flow_analysis::ControlFlowGraph;
-use crate::error::*;
-use crate::semantic_analysis::{ast_node::*, TCOpts, TypeCheckArguments};
-use crate::type_engine::TypeId;
-use std::cmp::Ordering;
-use std::collections::HashMap;
+use crate::{
+    build_config::BuildConfig,
+    constants::{STORAGE_PURITY_READ_NAME, STORAGE_PURITY_WRITE_NAME},
+    control_flow_analysis::ControlFlowGraph,
+    error::*,
+    semantic_analysis::{ast_node::*, TCOpts, TypeCheckArguments},
+    type_engine::TypeId,
+};
+use std::{cmp::Ordering, collections::HashMap};
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn instantiate_function_application(
@@ -69,8 +71,20 @@ pub(crate) fn instantiate_function_application(
         ..
     } = typed_function_decl;
 
-    if opts.purity != purity {
-        errors.push(CompileError::PureCalledImpure { span: name.span() });
+    // 'purity' is that of the callee, 'opts.purity' of the caller.
+    if !opts.purity.can_call(purity) {
+        let attrs = match promote_purity(opts.purity, purity) {
+            Purity::Pure => unreachable!("doesn't make sense to promote _to_ pure"),
+            Purity::Reads => STORAGE_PURITY_READ_NAME.to_owned(),
+            Purity::Writes => STORAGE_PURITY_WRITE_NAME.to_owned(),
+            Purity::ReadsWrites => {
+                format!("{STORAGE_PURITY_READ_NAME}, {STORAGE_PURITY_WRITE_NAME}")
+            }
+        };
+        errors.push(CompileError::PureCalledImpure {
+            attrs,
+            span: name.span(),
+        });
     }
 
     match arguments.len().cmp(&parameters.len()) {

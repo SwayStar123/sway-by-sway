@@ -429,6 +429,7 @@ pub fn run(filter_regex: Option<regex::Regex>) {
         "should_fail/different_contract_caller_types",
         "should_fail/insufficient_type_info",
         "should_fail/primitive_type_argument",
+        "should_fail/impure_read_calls_impure_write",
     ];
     number_of_tests_run += negative_project_names.iter().fold(0, |acc, name| {
         if filter(name) {
