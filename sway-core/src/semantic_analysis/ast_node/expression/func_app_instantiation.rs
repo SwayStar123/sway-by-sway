@@ -81,7 +81,7 @@ pub(crate) fn instantiate_function_application(
                 format!("{STORAGE_PURITY_READ_NAME}, {STORAGE_PURITY_WRITE_NAME}")
             }
         };
-        errors.push(CompileError::PureCalledImpure {
+        errors.push(CompileError::StorageAccessMismatch {
             attrs,
             span: name.span(),
         });

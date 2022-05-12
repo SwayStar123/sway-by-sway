@@ -878,11 +878,10 @@ pub enum CompileError {
         span: Span,
     },
     #[error(
-        "Impure function called inside of pure function. Pure functions can only call \
-        other pure functions. Try making the surrounding function impure by adding \
+        "Storage attribute access mismatch. Try giving the calling function more access by adding \
         \"#[{STORAGE_PURITY_ATTRIBUTE_NAME}({attrs})]\" to the function declaration."
     )]
-    PureCalledImpure { attrs: String, span: Span },
+    StorageAccessMismatch { attrs: String, span: Span },
     #[error("Impure function inside of non-contract. Contract storage is only accessible from contracts.")]
     ImpureInNonContract { span: Span },
     #[error("Literal value is too large for type {ty}.")]
@@ -1138,7 +1137,7 @@ impl CompileError {
             MatchWrongType { span, .. } => span.clone(),
             MatchExpressionNonExhaustive { span, .. } => span.clone(),
             NotAnEnum { span, .. } => span.clone(),
-            PureCalledImpure { span, .. } => span.clone(),
+            StorageAccessMismatch { span, .. } => span.clone(),
             ImpureInNonContract { span, .. } => span.clone(),
             IntegerTooLarge { span, .. } => span.clone(),
             IntegerTooSmall { span, .. } => span.clone(),
