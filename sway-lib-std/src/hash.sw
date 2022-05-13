@@ -132,12 +132,16 @@ pub fn sha256<T>(value: T) -> b256 {
             move r2 sp;
             cfei i32;
             sw r2 r1 i0;
+            move r3 sp;
+            cfei i32;
             s256 r3 r2 r4;
             r3: b256
         }
     } else {
         let size = size_of::<T>();
         asm(r1: value, r2: size, r3) {
+            move r3 sp;
+            cfei i32;
             s256 r3 r1 r2;
             r3: b256
         }
