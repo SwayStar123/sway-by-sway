@@ -2,7 +2,7 @@
 
 A function is _pure_ if it does not access any [persistent storage](./storage.md). Conversely, the function is _impure_ if it does access any storage. Naturally, as storage is only available in smart contracts, impure functions cannot be used in predicates, scripts, or libraries. A pure function cannot call an impure function.
 
-In Sway, functions are pure by default but can be opted into impurity via the `storage` function attribute.  The `storage` attribute may take `read` and/or `write` arguments indicating which type of access the function requires.
+In Sway, functions are pure by default but can be opted into impurity via the `storage` function attribute. The `storage` attribute may take `read` and/or `write` arguments indicating which type of access the function requires.
 
 ```sway
 #[storage(read)]
@@ -14,10 +14,9 @@ fn get_amount() -> u64 {
 fn increment_amount(increment: u64) -> u64 {
     ...
 }
-
 ```
 
-Impure functions which call other impure functions must have at least the same storage privileges or a superset of those for the function called.  For example, to call a function with write access a caller must also have write access, or both read and write access.  To call a function with read and write access the caller must also have both privileges.
+Impure functions which call other impure functions must have at least the same storage privileges or a superset of those for the function called. For example, to call a function with write access a caller must also have write access, or both read and write access. To call a function with read and write access the caller must also have both privileges.
 
 The `storage` attribute may also be applied to [methods and associated functions](../basics/methods_and_associated_functions.md) but are not required nor accepted for [trait](../advanced/traits.md) or [ABI declarations](../sway-program-types/smart_contracts.md#the-abi-declaration).
 
