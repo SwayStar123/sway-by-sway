@@ -173,26 +173,30 @@ pub fn compose(word_1: u64, word_2: u64, word_3: u64, word_4: u64) -> b256 {
 
 const FLAG = 2;
 
-pub fn shift_left_with_overflow(word: u64, shift_amount: u64) -> (u64, u64) {
+fn shift_left_with_overflow(word: u64, shift_amount: u64) -> (u64, u64) {
     let mut output = (0, 0);
-    let (shifted, overflow) = asm(out: output, r1: word, r2: shift_amount, r3, r4: FLAG) {
-       flag r4;        // set the flag to allow overflow without panic
-       sll r3 r1 r2;   // shift 'word' left 'shift_amount' and put result in r3
-       sw out r3 i0;   // store the word at r4 in output + 0 bytes
-       sw out of i1;   // store the word at r4 in output + 0 bytes
+    let right_shift_amount = 64 - shift_amount;
+    let (shifted, overflow) = asm(out: output, r1: word, r2: shift_amount, r3, r4, r5: FLAG, r6: right_shift_amount) {
+       flag r5;        // set flag to allow overflow without panic
+       srl r3 r1 r6;   // shift right to get overflow, put result in r3
+       sll r4 r1 r2;   // shift left, put result in r4
+       sw out r4 i0;   // store word at r4 in output
+       sw out r3 i1;   // store word at r3 in output + 1 word offset
        out: (u64, u64) // return both values
     };
 
     (shifted, overflow)
 }
 
-pub fn shift_right_with_overflow(word: u64, shift_amount: u64) -> (u64, u64) {
+fn shift_right_with_overflow(word: u64, shift_amount: u64) -> (u64, u64) {
     let mut output = (0, 0);
-    let (shifted, overflow) = asm(out: output, r1: word, r2: shift_amount, r3, r4: FLAG) {
-       flag r4;        // set the flag to allow overflow without panic
-       srl r3 r1 r2;   // shift 'word' right 'shift_amount' and put result in r3
-       sw out r3 i0;   // store the word at r4 in output + 0 bytes
-       sw out of i1;   // store the word at r4 in output + 0 bytes
+    let left_shift_amount = 64 - shift_amount;
+    let (shifted, overflow) = asm(out: output, r1: word, r2: shift_amount, r3, r4, r5: FLAG, r6: left_shift_amount) {
+       flag r5;        // set flag to allow overflow without panic
+       sll r3 r1 r6;   // shift left to get overflow, put result in r3
+       srl r4 r1 r2;   // shift right, put result in r4
+       sw out r4 i0;   // store word at r4 in output
+       sw out r3 i1;   // store word at r3 in output + 1 word offset
        out: (u64, u64) // return both values
     };
 
