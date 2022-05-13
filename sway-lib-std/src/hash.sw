@@ -124,3 +124,22 @@ pub fn hash_pair(value_a: b256, value_b: b256, method: HashMethod) -> b256 {
         }
     }
 }
+
+/// Use to hash a generic stack type with sha-256
+pub fn sha256<T>(value: T) -> b256 {
+    if !is_reference_type::<T>() {
+        asm(r1: value, r2, r3, r4: 32) {
+            move r2 sp;
+            cfei i32;
+            sw r2 r1 i0;
+            s256 r3 r2 r4;
+            r3: b256
+        }
+    } else {
+        let size = size_of::<T>();
+        asm(r1: value, r2: size, r3) {
+            s256 r3 r1 r2;
+            r3: b256
+        }
+    }
+}
