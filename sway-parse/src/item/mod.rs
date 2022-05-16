@@ -12,14 +12,7 @@ pub mod item_use;
 
 pub type Item = Annotated<ItemKind>;
 
-impl Item {
-    pub fn span(&self) -> Span {
-        match self.attribute_list.first() {
-            Some(attr0) => Span::join(attr0.span(), self.value.span()),
-            None => self.value.span(),
-        }
-    }
-}
+impl_span_for_annotated!(Item);
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug)]
@@ -557,5 +550,164 @@ mod tests {
         assert_eq!(args.next().map(|arg| arg.as_str()), Some("three"));
         assert_eq!(args.next().map(|arg| arg.as_str()), Some("four"));
         assert_eq!(args.next().map(|arg| arg.as_str()), None);
+    }
+
+    #[test]
+    fn parse_attributes_trait() {
+        let item = parse_item(
+            r#"
+            trait T {
+                #[foo(one)]
+                #[bar]
+                fn f() -> bool;
+            } {
+                #[bar(one, two, three)]
+                fn g() -> bool {
+                    f()
+                }
+            }
+            "#,
+        );
+
+        // The trait itself has no attributes.
+        assert!(matches!(item.value, ItemKind::Trait(_)));
+        assert_eq!(item.attribute_list.len(), 0);
+
+        if let ItemKind::Trait(item_trait) = item.value {
+            let mut decls = item_trait.trait_items.get().into_iter();
+
+            let f_sig = decls.next();
+            assert!(f_sig.is_some());
+
+            let attrib = f_sig.unwrap().0.attribute_list.get(0).unwrap();
+            assert_eq!(attrib.attribute.get().name.as_str(), "foo");
+            assert!(attrib.attribute.get().args.is_some());
+            let mut args = attrib
+                .attribute
+                .get()
+                .args
+                .as_ref()
+                .unwrap()
+                .get()
+                .into_iter();
+            assert_eq!(args.next().map(|arg| arg.as_str()), Some("one"));
+            assert_eq!(args.next().map(|arg| arg.as_str()), None);
+
+            let attrib = f_sig.unwrap().0.attribute_list.get(1).unwrap();
+            assert_eq!(attrib.attribute.get().name.as_str(), "bar");
+            assert!(attrib.attribute.get().args.is_none());
+
+            assert!(decls.next().is_none());
+
+            assert!(item_trait.trait_defs_opt.is_some());
+            let mut defs = item_trait.trait_defs_opt.as_ref().unwrap().get().into_iter();
+
+            let g_sig = defs.next();
+            assert!(g_sig.is_some());
+
+            let attrib = g_sig.unwrap().attribute_list.get(0).unwrap();
+            assert_eq!(attrib.attribute.get().name.as_str(), "bar");
+            assert!(attrib.attribute.get().args.is_some());
+            let mut args = attrib
+                .attribute
+                .get()
+                .args
+                .as_ref()
+                .unwrap()
+                .get()
+                .into_iter();
+            assert_eq!(args.next().map(|arg| arg.as_str()), Some("one"));
+            assert_eq!(args.next().map(|arg| arg.as_str()), Some("two"));
+            assert_eq!(args.next().map(|arg| arg.as_str()), Some("three"));
+            assert_eq!(args.next().map(|arg| arg.as_str()), None);
+
+            assert!(defs.next().is_none());
+        } else {
+            panic!("Parsed trait is not a trait.");
+        }
+    }
+
+    #[test]
+    fn parse_attributes_abi() {
+        let item = parse_item(
+            r#"
+            abi A {
+                #[bar(one, two, three)]
+                fn f() -> bool;
+
+                #[foo]
+                fn g() -> u64;
+            } {
+                #[baz(one)]
+                fn h() -> bool {
+                    f()
+                }
+            }
+            "#,
+        );
+
+        // The ABI itself has no attributes.
+        assert!(matches!(item.value, ItemKind::Abi(_)));
+        assert_eq!(item.attribute_list.len(), 0);
+
+        if let ItemKind::Abi(item_abi) = item.value {
+            let mut decls = item_abi.abi_items.get().into_iter();
+
+            let f_sig = decls.next();
+            assert!(f_sig.is_some());
+
+            let attrib = f_sig.unwrap().0.attribute_list.get(0).unwrap();
+            assert_eq!(attrib.attribute.get().name.as_str(), "bar");
+            assert!(attrib.attribute.get().args.is_some());
+            let mut args = attrib
+                .attribute
+                .get()
+                .args
+                .as_ref()
+                .unwrap()
+                .get()
+                .into_iter();
+            assert_eq!(args.next().map(|arg| arg.as_str()), Some("one"));
+            assert_eq!(args.next().map(|arg| arg.as_str()), Some("two"));
+            assert_eq!(args.next().map(|arg| arg.as_str()), Some("three"));
+            assert_eq!(args.next().map(|arg| arg.as_str()), None);
+
+            assert!(f_sig.unwrap().0.attribute_list.get(1).is_none());
+
+            let g_sig = decls.next();
+            assert!(g_sig.is_some());
+
+            let attrib = g_sig.unwrap().0.attribute_list.get(0).unwrap();
+            assert_eq!(attrib.attribute.get().name.as_str(), "foo");
+            assert!(attrib.attribute.get().args.is_none());
+
+            assert!(g_sig.unwrap().0.attribute_list.get(1).is_none());
+
+            assert!(decls.next().is_none());
+
+            assert!(item_abi.abi_defs_opt.is_some());
+            let mut defs = item_abi.abi_defs_opt.as_ref().unwrap().get().into_iter();
+
+            let h_sig = defs.next();
+            assert!(h_sig.is_some());
+
+            let attrib = h_sig.unwrap().attribute_list.get(0).unwrap();
+            assert_eq!(attrib.attribute.get().name.as_str(), "baz");
+            assert!(attrib.attribute.get().args.is_some());
+            let mut args = attrib
+                .attribute
+                .get()
+                .args
+                .as_ref()
+                .unwrap()
+                .get()
+                .into_iter();
+            assert_eq!(args.next().map(|arg| arg.as_str()), Some("one"));
+            assert_eq!(args.next().map(|arg| arg.as_str()), None);
+
+            assert!(defs.next().is_none());
+        } else {
+            panic!("Parsed ABI is not an ABI.");
+        }
     }
 }

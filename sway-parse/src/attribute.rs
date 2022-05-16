@@ -6,6 +6,21 @@ pub struct Annotated<T: Parse> {
     pub value: T,
 }
 
+macro_rules! impl_span_for_annotated (
+    ($ty_name: ident) => {
+        impl $ty_name {
+            pub fn span(&self) -> Span {
+                match self.attribute_list.first() {
+                    Some(attr0) => Span::join(attr0.span(), self.value.span()),
+                    None => self.value.span(),
+                }
+            }
+        }
+    };
+);
+
+pub(crate) use impl_span_for_annotated;
+
 impl<T: Parse> Parse for Annotated<T> {
     fn parse(parser: &mut Parser) -> ParseResult<Self> {
         let mut attribute_list = Vec::new();

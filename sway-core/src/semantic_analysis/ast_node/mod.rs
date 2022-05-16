@@ -1215,6 +1215,7 @@ fn type_check_interface_surface(
         .map(
             |TraitFn {
                  name,
+                 purity: _,
                  parameters,
                  return_type,
                  return_type_span,

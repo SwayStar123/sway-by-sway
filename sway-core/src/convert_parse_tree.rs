@@ -587,7 +587,10 @@ fn item_trait_to_trait_declaration(
             .trait_items
             .into_inner()
             .into_iter()
-            .map(|(fn_signature, _semicolon_token)| fn_signature_to_trait_fn(ec, fn_signature))
+            .map(|(fn_signature, _semicolon_token)| {
+                let attributes = item_attrs_to_map(&fn_signature.attribute_list)?;
+                fn_signature_to_trait_fn(ec, fn_signature.value, &attributes)
+            })
             .collect::<Result<_, _>>()?
     };
     let methods = match item_trait.trait_defs_opt {
@@ -595,7 +598,10 @@ fn item_trait_to_trait_declaration(
         Some(trait_defs) => trait_defs
             .into_inner()
             .into_iter()
-            .map(|item_fn| item_fn_to_function_declaration(ec, item_fn, &AttributesMap::default()))
+            .map(|item_fn| {
+                let attributes = item_attrs_to_map(&item_fn.attribute_list)?;
+                item_fn_to_function_declaration(ec, item_fn.value, &attributes)
+            })
             .collect::<Result<_, _>>()?,
     };
     let supertraits = match item_trait.super_traits {
@@ -668,7 +674,10 @@ fn item_abi_to_abi_declaration(
                 .abi_items
                 .into_inner()
                 .into_iter()
-                .map(|(fn_signature, _semicolon_token)| fn_signature_to_trait_fn(ec, fn_signature))
+                .map(|(fn_signature, _semicolon_token)| {
+                    let attributes = item_attrs_to_map(&fn_signature.attribute_list)?;
+                    fn_signature_to_trait_fn(ec, fn_signature.value, &attributes)
+                })
                 .collect::<Result<_, _>>()?
         },
         methods: match item_abi.abi_defs_opt {
@@ -677,7 +686,8 @@ fn item_abi_to_abi_declaration(
                 .into_inner()
                 .into_iter()
                 .map(|item_fn| {
-                    item_fn_to_function_declaration(ec, item_fn, &AttributesMap::default())
+                    let attributes = item_attrs_to_map(&item_fn.attribute_list)?;
+                    item_fn_to_function_declaration(ec, item_fn.value, &attributes)
                 })
                 .collect::<Result<_, _>>()?,
         },
@@ -884,6 +894,7 @@ fn ty_to_type_argument(ec: &mut ErrorContext, ty: Ty) -> Result<TypeArgument, Er
 fn fn_signature_to_trait_fn(
     ec: &mut ErrorContext,
     fn_signature: FnSignature,
+    attributes: &AttributesMap,
 ) -> Result<TraitFn, ErrorEmitted> {
     let return_type_span = match &fn_signature.return_type_opt {
         Some((_right_arrow_token, ty)) => ty.span(),
@@ -891,6 +902,7 @@ fn fn_signature_to_trait_fn(
     };
     let trait_fn = TraitFn {
         name: fn_signature.name,
+        purity: get_attributed_purity(ec, attributes)?,
         parameters: fn_args_to_function_parameters(ec, fn_signature.arguments.into_inner())?,
         return_type: match fn_signature.return_type_opt {
             Some((_right_arrow_token, ty)) => ty_to_type_info(ec, ty)?,

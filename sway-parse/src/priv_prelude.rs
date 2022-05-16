@@ -45,3 +45,5 @@ pub use {
     thiserror::Error,
     unicode_xid::UnicodeXID,
 };
+
+pub(crate) use crate::attribute::impl_span_for_annotated;

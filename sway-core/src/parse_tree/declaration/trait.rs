@@ -3,6 +3,7 @@ use super::{FunctionDeclaration, FunctionParameter};
 use crate::{
     build_config::BuildConfig,
     error::*,
+    function::Purity,
     parse_tree::{ident, CallPath, Visibility},
     parser::Rule,
     style::{is_snake_case, is_upper_camel_case},
@@ -140,6 +141,7 @@ impl Supertrait {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TraitFn {
     pub name: Ident,
+    pub purity: Purity,
     pub parameters: Vec<FunctionParameter>,
     pub return_type: TypeInfo,
     pub(crate) return_type_span: Span,
@@ -242,6 +244,7 @@ impl TraitFn {
         ok(
             TraitFn {
                 name,
+                purity: Purity::ReadsWrites,
                 parameters,
                 return_type,
                 return_type_span,

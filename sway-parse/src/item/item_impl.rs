@@ -6,7 +6,7 @@ pub struct ItemImpl {
     pub generic_params_opt: Option<GenericParams>,
     pub trait_opt: Option<(PathType, ForToken)>,
     pub ty: Ty,
-    pub contents: Braces<Vec<ImplMethod>>,
+    pub contents: Braces<Vec<Annotated<ItemFn>>>,
 }
 
 impl ItemImpl {
@@ -41,16 +41,5 @@ impl Parse for ItemImpl {
             ty,
             contents,
         })
-    }
-}
-
-pub type ImplMethod = Annotated<ItemFn>;
-
-impl ImplMethod {
-    pub fn span(&self) -> Span {
-        match self.attribute_list.first() {
-            Some(attr0) => Span::join(attr0.span(), self.value.span()),
-            None => self.value.span(),
-        }
     }
 }
