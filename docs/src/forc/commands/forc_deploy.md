@@ -20,6 +20,13 @@ If set, outputs source file mapping in JSON format
 Print help information
 
 
+`--locked` 
+
+
+Requires that the Forc.lock file is up-to-date. If the lock file is missing, or it needs
+to be updated, Forc will exit with an error
+
+
 `--minify-json-abi` 
 
 
@@ -77,26 +84,10 @@ Whether to compile to bytecode (false) or to print out the IR (true)
 
 Silent mode. Don't output any warnings or errors to the command line
 
-
-`--use-orig-asm` 
-
-
-Whether to compile using the original (pre- IR) pipeline
-
 ## EXAMPLES:
 
-Deploy contract project. Crafts a contract deployment transaction then sends it to a running node.
+You can use `forc deploy`, which triggers a contract deployment transaction and sends it to a running node.
 
-Alternatively, you could deploy your contract programmatically using our SDK:
+Alternatively, you can deploy your Sway contract programmatically using [fuels-rs](https://github.com/FuelLabs/fuels-rs), our Rust SDK.
 
-```rust
-// Build the contract
-let salt: [u8; 32] = rng.gen();
-let salt = Salt::from(salt);
-let compiled = Contract::compile_sway_contract("./", salt).unwrap();
-
-// Launch a local network and deploy the contract
-let compiled = Contract::compile_sway_contract("./", salt).unwrap();
-let client = Provider::launch(Config::local_node()).await.unwrap();
-let contract_id = Contract::deploy(&compiled, &client).await.unwrap();
-```
+You can find an example within our [fuels-rs book](https://fuellabs.github.io/fuels-rs/latest/getting-started/basics.html#deploying-a-sway-contract).

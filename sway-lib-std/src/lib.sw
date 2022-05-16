@@ -1,6 +1,6 @@
 library std;
 
-dep panic;
+dep revert;
 dep assert;
 dep option;
 dep result;
@@ -18,6 +18,6 @@ dep block;
 dep token;
 dep ecr;
 dep reentrancy;
-dep b256_ops;
+dep vm/mod;
 
 use core::*;

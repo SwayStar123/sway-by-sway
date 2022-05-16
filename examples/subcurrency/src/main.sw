@@ -2,12 +2,12 @@
 contract;
 
 use std::{
-    address::Address, 
-    assert::assert, 
-    chain::auth::{AuthError, Sender, msg_sender}, 
-    hash::*, 
-    panic::panic, 
-    result::*, 
+    address::Address,
+    assert::assert,
+    chain::auth::{AuthError, Sender, msg_sender},
+    hash::*,
+    result::*,
+    revert::revert,
     storage::{get, store}
 };
 
@@ -69,7 +69,7 @@ impl Token for Contract {
         let sender = if let Sender::Address(addr) = sender.unwrap() {
             assert(addr.into() == MINTER);
         } else {
-            panic(0);
+            revert(0);
         };
 
         // Increase the balance of receiver
@@ -83,7 +83,7 @@ impl Token for Contract {
         let sender = if let Sender::Address(addr) = sender.unwrap() {
             addr
         } else {
-            panic(0);
+            revert(0);
         };
 
         // Reduce the balance of sender
