@@ -1,7 +1,25 @@
 contract;
 
 abi ImpurityTest {
+    #[storage(read, write)]
     fn impure_func() -> bool;
+
+// DISABLED until we can work out ABI methods.
+//    #[storage(read)]
+//    fn only_read() -> bool;
+//
+//    #[storage(write)]
+//    fn only_write() -> bool;
+//} {
+//    #[storage(read)]
+//    fn do_a_read() -> bool {
+//        Self::only_read()
+//    }
+//
+//    #[storage(write)]
+//    fn do_a_write() -> bool {
+//        only_write()
+//    }
 }
 
 impl ImpurityTest for Contract {
@@ -10,6 +28,17 @@ impl ImpurityTest for Contract {
         let a = can_also_read_and_write();
         true
     }
+
+// DISABLED, see above.
+//    #[storage(read)]
+//    fn only_read() -> bool {
+//        true
+//    }
+//
+//    #[storage(write)]
+//    fn only_write() -> bool {
+//        true
+//    }
 }
 
 #[storage(read)]
