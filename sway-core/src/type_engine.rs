@@ -86,7 +86,7 @@ impl ToJsonAbi for TypeId {
 
 #[test]
 fn generic_enum_resolution() {
-    use crate::semantic_analysis::ast_node::TypedEnumVariant;
+    use crate::semantic_analysis::declaration::TypedEnumVariant;
     use crate::Ident;
     let engine = Engine::default();
 
@@ -104,6 +104,7 @@ fn generic_enum_resolution() {
     let ty_1 = engine.insert_type(TypeInfo::Enum {
         name: Ident::new_with_override("Result", sp.clone()),
         variant_types,
+        type_parameters: vec![],
     });
 
     let variant_types = vec![TypedEnumVariant {
@@ -116,6 +117,7 @@ fn generic_enum_resolution() {
     let ty_2 = engine.insert_type(TypeInfo::Enum {
         name: Ident::new_with_override("Result", sp.clone()),
         variant_types,
+        type_parameters: vec![],
     });
 
     // Unify them together...

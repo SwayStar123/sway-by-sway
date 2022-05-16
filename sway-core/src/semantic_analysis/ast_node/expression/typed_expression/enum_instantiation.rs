@@ -1,11 +1,19 @@
-use ast_node::declaration::EnforceTypeArguments;
+use sway_types::Ident;
 
-use crate::build_config::BuildConfig;
-use crate::control_flow_analysis::ControlFlowGraph;
-use crate::error::*;
-use crate::semantic_analysis::ast_node::declaration::CreateTypeId;
-use crate::semantic_analysis::{ast_node::*, TCOpts, TypeCheckArguments};
-use crate::type_engine::{look_up_type_id, TypeId};
+use crate::{
+    build_config::BuildConfig,
+    control_flow_analysis::ControlFlowGraph,
+    error::{err, ok},
+    semantic_analysis::{
+        ast_node::declaration::{CreateTypeId, EnforceTypeArguments, TypedEnumDeclaration},
+        namespace::Namespace,
+        IsConstant, Mode, TCOpts, TypeCheckArguments, TypedExpressionVariant,
+    },
+    type_engine::{look_up_type_id, TypeId},
+    CompileError, CompileResult, Expression, TypeArgument,
+};
+
+use super::TypedExpression;
 
 /// Given an enum declaration and the instantiation expression/type arguments, construct a valid
 /// [TypedExpression].

@@ -1,4 +1,4 @@
-use self::declaration::EnforceTypeArguments;
+use self::declaration::{EnforceTypeArguments, TypedStructDeclaration, TypedStructField};
 
 use super::{namespace::Namespace, ERROR_RECOVERY_DECLARATION};
 
@@ -20,9 +20,8 @@ pub mod declaration;
 use declaration::TypedTraitFn;
 
 pub use declaration::{
-    TypedAbiDeclaration, TypedConstantDeclaration, TypedDeclaration, TypedEnumDeclaration,
-    TypedEnumVariant, TypedFunctionDeclaration, TypedFunctionParameter, TypedStructDeclaration,
-    TypedStructField,
+    TypedAbiDeclaration, TypedConstantDeclaration, TypedDeclaration, TypedFunctionDeclaration,
+    TypedFunctionParameter,
 };
 
 pub(crate) use declaration::{

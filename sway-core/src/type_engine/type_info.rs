@@ -2,7 +2,7 @@ use super::*;
 
 use crate::{
     build_config::BuildConfig,
-    semantic_analysis::ast_node::{TypedEnumVariant, TypedStructField},
+    semantic_analysis::declaration::{TypedEnumVariant, TypedStructField},
     CallPath, Ident, Rule, TypeArgument, TypeParameter,
 };
 
@@ -42,10 +42,12 @@ pub enum TypeInfo {
     Enum {
         name: Ident,
         variant_types: Vec<TypedEnumVariant>,
+        type_parameters: Vec<TypeParameter>,
     },
     Struct {
         name: Ident,
         fields: Vec<TypedStructField>,
+        type_parameters: Vec<TypeParameter>,
     },
     Boolean,
     /// For the type inference engine to use when a type references another type
@@ -122,15 +124,22 @@ impl Hash for TypeInfo {
             TypeInfo::Enum {
                 name,
                 variant_types,
+                type_parameters,
             } => {
                 state.write_u8(8);
                 name.hash(state);
                 variant_types.hash(state);
+                type_parameters.hash(state);
             }
-            TypeInfo::Struct { name, fields } => {
+            TypeInfo::Struct {
+                name,
+                fields,
+                type_parameters,
+            } => {
                 state.write_u8(9);
                 name.hash(state);
                 fields.hash(state);
+                type_parameters.hash(state);
             }
             TypeInfo::ContractCaller { abi_name, address } => {
                 state.write_u8(10);
@@ -209,26 +218,30 @@ impl PartialEq for TypeInfo {
                 Self::Enum {
                     name: l_name,
                     variant_types: l_variant_types,
-                    ..
+                    type_parameters: l_type_parameters,
                 },
                 Self::Enum {
                     name: r_name,
                     variant_types: r_variant_types,
-                    ..
+                    type_parameters: r_type_parameters,
                 },
-            ) => l_name == r_name && l_variant_types == r_variant_types,
+            ) => {
+                l_name == r_name
+                    && l_variant_types == r_variant_types
+                    && l_type_parameters == r_type_parameters
+            }
             (
                 Self::Struct {
                     name: l_name,
                     fields: l_fields,
-                    ..
+                    type_parameters: l_type_parameters,
                 },
                 Self::Struct {
                     name: r_name,
                     fields: r_fields,
-                    ..
+                    type_parameters: r_type_parameters,
                 },
-            ) => l_name == r_name && l_fields == r_fields,
+            ) => l_name == r_name && l_fields == r_fields && l_type_parameters == r_type_parameters,
             (Self::Ref(l), Self::Ref(r)) => look_up_type_id(*l) == look_up_type_id(*r),
             (Self::Tuple(l), Self::Tuple(r)) => l
                 .iter()
@@ -499,15 +512,21 @@ impl TypeInfo {
             ErrorRecovery => "unknown due to error".into(),
             Enum {
                 name,
-                variant_types,
+                type_parameters,
                 ..
             } => print_inner_types(
                 format!("enum {}", name),
-                variant_types.iter().map(|x| x.r#type),
+                type_parameters.iter().map(|x| x.type_id),
             ),
-            Struct { name, fields, .. } => print_inner_types(
+            Struct {
+                name,
+                type_parameters,
+                ..
+            } => print_inner_types(
                 format!("struct {}", name),
-                fields.iter().map(|field| field.r#type),
+                type_parameters
+                    .iter()
+                    .map(|type_parameter| type_parameter.type_id),
             ),
             ContractCaller { abi_name, .. } => {
                 format!("contract caller {}", abi_name)
@@ -841,7 +860,11 @@ impl TypeInfo {
                 }
                 None
             }
-            TypeInfo::Struct { fields, name } => {
+            TypeInfo::Struct {
+                fields,
+                name,
+                type_parameters,
+            } => {
                 let mut new_fields = fields.clone();
                 for new_field in new_fields.iter_mut() {
                     if let Some(matching_id) =
@@ -850,14 +873,24 @@ impl TypeInfo {
                         new_field.r#type = insert_type(TypeInfo::Ref(matching_id));
                     }
                 }
+                let mut new_type_parameters = type_parameters.clone();
+                for new_type_parameter in new_type_parameters.iter_mut() {
+                    if let Some(matching_id) =
+                        look_up_type_id(new_type_parameter.type_id).matches_type_parameter(mapping)
+                    {
+                        new_type_parameter.type_id = insert_type(TypeInfo::Ref(matching_id));
+                    }
+                }
                 Some(insert_type(TypeInfo::Struct {
                     fields: new_fields,
                     name: name.clone(),
+                    type_parameters: new_type_parameters,
                 }))
             }
             TypeInfo::Enum {
                 variant_types,
                 name,
+                type_parameters,
             } => {
                 let mut new_variants = variant_types.clone();
                 for new_variant in new_variants.iter_mut() {
@@ -867,9 +900,18 @@ impl TypeInfo {
                         new_variant.r#type = insert_type(TypeInfo::Ref(matching_id));
                     }
                 }
+                let mut new_type_parameters = type_parameters.clone();
+                for new_type_parameter in new_type_parameters.iter_mut() {
+                    if let Some(matching_id) =
+                        look_up_type_id(new_type_parameter.type_id).matches_type_parameter(mapping)
+                    {
+                        new_type_parameter.type_id = insert_type(TypeInfo::Ref(matching_id));
+                    }
+                }
                 Some(insert_type(TypeInfo::Enum {
                     variant_types: new_variants,
                     name: name.clone(),
+                    type_parameters: new_type_parameters,
                 }))
             }
             TypeInfo::Array(ary_ty_id, count) => look_up_type_id(*ary_ty_id)
@@ -936,14 +978,13 @@ impl TypeInfo {
         let mut errors = vec![];
         match (self, subfields.split_first()) {
             (TypeInfo::Struct { .. }, None) => err(warnings, errors),
-            (TypeInfo::Struct { name, fields }, Some((first, rest))) => {
+            (TypeInfo::Struct { name, fields, .. }, Some((first, rest))) => {
                 let field = match fields
                     .iter()
                     .find(|field| field.name.as_str() == first.as_str())
                 {
                     Some(field) => field.clone(),
                     None => {
-                        // gather available fields for the error message
                         let available_fields =
                             fields.iter().map(|x| x.name.as_str()).collect::<Vec<_>>();
                         errors.push(CompileError::FieldNotFound {

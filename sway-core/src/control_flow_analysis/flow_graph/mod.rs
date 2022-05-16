@@ -2,7 +2,10 @@
 //! execution.
 
 use crate::{
-    semantic_analysis::{ast_node::TypedEnumVariant, ast_node::TypedStructField, TypedAstNode},
+    semantic_analysis::{
+        declaration::{TypedEnumVariant, TypedStructField},
+        TypedAstNode,
+    },
     Ident,
 };
 

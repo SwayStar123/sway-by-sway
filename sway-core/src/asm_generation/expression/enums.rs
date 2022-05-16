@@ -1,14 +1,16 @@
-use crate::asm_generation::{
-    compiler_constants::*, convert_expression_to_asm, AsmNamespace, RegisterSequencer,
-};
-use crate::asm_lang::{
-    ConstantRegister, Op, VirtualImmediate12, VirtualImmediate18, VirtualImmediate24, VirtualOp,
-    VirtualRegister,
-};
-use crate::semantic_analysis::ast_node::declaration::CreateTypeId;
 use crate::{
+    asm_generation::{
+        compiler_constants::*, convert_expression_to_asm, AsmNamespace, RegisterSequencer,
+    },
+    asm_lang::{
+        ConstantRegister, Op, VirtualImmediate12, VirtualImmediate18, VirtualImmediate24,
+        VirtualOp, VirtualRegister,
+    },
     error::*,
-    semantic_analysis::ast_node::{TypedEnumDeclaration, TypedExpression},
+    semantic_analysis::ast_node::{
+        declaration::{CreateTypeId, TypedEnumDeclaration},
+        TypedExpression,
+    },
     type_engine::resolve_type,
     CompileResult, Literal,
 };

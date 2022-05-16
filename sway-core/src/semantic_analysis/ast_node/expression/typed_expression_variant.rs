@@ -1,6 +1,7 @@
 use super::*;
 
 use crate::{parse_tree::AsmOp, semantic_analysis::ast_node::*, Ident};
+use ast_node::declaration::{TypedEnumDeclaration, TypedEnumVariant};
 use std::collections::HashMap;
 use sway_types::state::StateIndex;
 

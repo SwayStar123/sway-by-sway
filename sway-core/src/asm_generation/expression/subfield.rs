@@ -7,8 +7,8 @@ use crate::{
     parse_tree::{AsmExpression, AsmOp, AsmRegisterDeclaration, CallPath, Literal, UnaryOp},
     semantic_analysis::{
         ast_node::{
-            TypedAsmRegisterDeclaration, TypedCodeBlock, TypedEnumVariant, TypedExpressionVariant,
-            TypedStructExpressionField, TypedStructField,
+            TypedAsmRegisterDeclaration, TypedCodeBlock, TypedExpressionVariant,
+            TypedStructExpressionField,
         },
         TypedExpression,
     },

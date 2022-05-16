@@ -156,23 +156,35 @@ impl Engine {
                 Struct {
                     name: a_name,
                     fields: a_fields,
-                    ..
+                    type_parameters: l_type_parameters,
                 },
                 Struct {
                     name: b_name,
                     fields: b_fields,
-                    ..
+                    type_parameters: r_type_parameters,
                 },
             ) => {
                 let mut warnings = vec![];
                 let mut errors = vec![];
-                if a_name == b_name && a_fields.len() == b_fields.len() {
+                if a_name == b_name
+                    && a_fields.len() == b_fields.len()
+                    && l_type_parameters.len() == r_type_parameters.len()
+                {
                     a_fields.iter().zip(b_fields.iter()).for_each(|(a, b)| {
                         let (new_warnings, new_errors) =
                             self.unify(a.r#type, b.r#type, &a.span, help_text.clone());
                         warnings.extend(new_warnings);
                         errors.extend(new_errors);
                     });
+                    l_type_parameters
+                        .iter()
+                        .zip(r_type_parameters.iter())
+                        .for_each(|(a, b)| {
+                            let (new_warnings, new_errors) =
+                                self.unify(a.type_id, b.type_id, &a.span(), help_text.clone());
+                            warnings.extend(new_warnings);
+                            errors.extend(new_errors);
+                        });
                 } else {
                     errors.push(TypeError::MismatchedType {
                         expected,
@@ -187,21 +199,35 @@ impl Engine {
                 Enum {
                     name: a_name,
                     variant_types: a_variants,
+                    type_parameters: l_type_parameters,
                 },
                 Enum {
                     name: b_name,
                     variant_types: b_variants,
+                    type_parameters: r_type_parameters,
                 },
             ) => {
                 let mut warnings = vec![];
                 let mut errors = vec![];
-                if a_name == b_name && a_variants.len() == b_variants.len() {
+                if a_name == b_name
+                    && a_variants.len() == b_variants.len()
+                    && l_type_parameters.len() == r_type_parameters.len()
+                {
                     a_variants.iter().zip(b_variants.iter()).for_each(|(a, b)| {
                         let (new_warnings, new_errors) =
                             self.unify(a.r#type, b.r#type, &a.span, help_text.clone());
                         warnings.extend(new_warnings);
                         errors.extend(new_errors);
                     });
+                    l_type_parameters
+                        .iter()
+                        .zip(r_type_parameters.iter())
+                        .for_each(|(a, b)| {
+                            let (new_warnings, new_errors) =
+                                self.unify(a.type_id, b.type_id, &a.span(), help_text.clone());
+                            warnings.extend(new_warnings);
+                            errors.extend(new_errors);
+                        });
                 } else {
                     errors.push(TypeError::MismatchedType {
                         expected,

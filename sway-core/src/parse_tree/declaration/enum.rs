@@ -4,8 +4,7 @@ use crate::{
     parse_tree::{declaration::TypeParameter, ident, Visibility},
     parser::Rule,
     semantic_analysis::{
-        ast_node::{TypedEnumDeclaration, TypedEnumVariant},
-        declaration::EnforceTypeArguments,
+        declaration::{EnforceTypeArguments, TypedEnumDeclaration, TypedEnumVariant},
         insert_type_parameters,
         namespace::Namespace,
     },

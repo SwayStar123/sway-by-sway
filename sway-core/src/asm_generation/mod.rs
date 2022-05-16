@@ -1,13 +1,3 @@
-use std::{
-    collections::{BTreeSet, HashMap},
-    fmt,
-};
-use sway_types::Span;
-
-use crate::semantic_analysis::ast_node::{
-    TypedStructField, TypedVariableDeclaration, VariableMutability,
-};
-use crate::type_engine::resolve_type;
 use crate::{
     asm_generation::expression::convert_abi_fn_to_asm,
     asm_lang::{
@@ -19,13 +9,21 @@ use crate::{
     error::*,
     parse_tree::Literal,
     semantic_analysis::{
+        ast_node::{TypedVariableDeclaration, VariableMutability},
+        declaration::TypedStructField,
         TypedAstNode, TypedAstNodeContent, TypedDeclaration, TypedFunctionDeclaration,
         TypedParseTree,
     },
+    type_engine::resolve_type,
     types::ResolvedType,
     BuildConfig, Ident, TypeInfo,
 };
 pub(crate) use expression::subfield::{convert_subfield_to_asm, get_subfields_for_layout};
+use std::{
+    collections::{BTreeSet, HashMap},
+    fmt,
+};
+use sway_types::Span;
 
 use either::Either;
 
@@ -1311,6 +1309,7 @@ fn compile_contract_to_selectors(
                             span: p.name.span().clone(),
                         })
                         .collect::<Vec<_>>(),
+                    type_parameters: Default::default(),
                 });
 
                 let subfields_for_layout = get_subfields_for_layout(bundled_arguments_type);

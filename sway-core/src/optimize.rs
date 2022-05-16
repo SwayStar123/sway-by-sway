@@ -6,7 +6,10 @@ use crate::{
     constants,
     error::CompileError,
     parse_tree::{AsmOp, AsmRegister, BuiltinProperty, LazyOp, Literal, Visibility},
-    semantic_analysis::{ast_node::*, *},
+    semantic_analysis::{
+        ast_node::declaration::{TypedEnumDeclaration, TypedEnumVariant, TypedStructField},
+        *,
+    },
     type_engine::*,
 };
 

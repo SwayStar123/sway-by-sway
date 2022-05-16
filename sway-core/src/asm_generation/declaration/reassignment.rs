@@ -6,7 +6,10 @@ use crate::{
     },
     asm_lang::{VirtualImmediate12, VirtualOp},
     constants::VM_WORD_SIZE,
-    semantic_analysis::ast_node::{ReassignmentLhs, TypedReassignment, TypedStructField},
+    semantic_analysis::{
+        ast_node::{ReassignmentLhs, TypedReassignment},
+        declaration::TypedStructField,
+    },
     type_engine::*,
     type_engine::{resolve_type, TypeInfo},
 };

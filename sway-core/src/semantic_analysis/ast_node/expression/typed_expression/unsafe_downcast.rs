@@ -2,8 +2,8 @@ use sway_types::Span;
 
 use crate::{
     semantic_analysis::{
-        ast_node::expression::match_expression::MatchReqMap, IsConstant, TypedEnumVariant,
-        TypedExpressionVariant,
+        ast_node::expression::match_expression::MatchReqMap, declaration::TypedEnumVariant,
+        IsConstant, TypedExpressionVariant,
     },
     type_engine::{insert_type, IntegerBits},
     Literal, TypeInfo,

@@ -1,6 +1,5 @@
-use crate::semantic_analysis::{
-    TypeCheckedStorageAccess, TypeCheckedStorageAccessDescriptor, TypedStructField,
-};
+use crate::semantic_analysis::declaration::TypedStructField;
+use crate::semantic_analysis::{TypeCheckedStorageAccess, TypeCheckedStorageAccessDescriptor};
 use crate::type_engine::look_up_type_id;
 use crate::{
     error::*,

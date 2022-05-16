@@ -290,6 +290,7 @@ impl ConstructorFactory {
                     TypeInfo::Enum {
                         name,
                         variant_types,
+                        type_parameters: _,
                     } => (name, variant_types),
                     _ => {
                         errors.push(CompileError::Internal("type mismatch", span.clone()));
@@ -526,6 +527,7 @@ impl ConstructorFactory {
                     TypeInfo::Enum {
                         name,
                         variant_types,
+                        type_parameters: _,
                     } => (name, variant_types),
                     _ => {
                         errors.push(CompileError::Internal("type mismatch", span.clone()));

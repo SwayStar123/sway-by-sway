@@ -5,11 +5,11 @@ use crate::{
     semantic_analysis::{
         ast_node::{
             TypedAbiDeclaration, TypedCodeBlock, TypedConstantDeclaration, TypedDeclaration,
-            TypedEnumDeclaration, TypedExpression, TypedExpressionVariant,
-            TypedFunctionDeclaration, TypedReassignment, TypedReturnStatement,
-            TypedStructDeclaration, TypedStructExpressionField, TypedTraitDeclaration,
+            TypedExpression, TypedExpressionVariant, TypedFunctionDeclaration, TypedReassignment,
+            TypedReturnStatement, TypedStructExpressionField, TypedTraitDeclaration,
             TypedVariableDeclaration, TypedWhileLoop, VariableMutability,
         },
+        declaration::{TypedEnumDeclaration, TypedStructDeclaration},
         TypeCheckedStorageReassignment, TypedAstNode, TypedAstNodeContent, TypedParseTree,
     },
     type_engine::{resolve_type, TypeInfo},
