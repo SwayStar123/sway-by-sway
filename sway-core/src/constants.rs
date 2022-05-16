@@ -25,3 +25,6 @@ pub const DEFAULT_ENTRY_POINT_FN_NAME: &str = "main";
 pub const STORAGE_PURITY_ATTRIBUTE_NAME: &str = "storage";
 pub const STORAGE_PURITY_READ_NAME: &str = "read";
 pub const STORAGE_PURITY_WRITE_NAME: &str = "write";
+
+/// The default prefix for the compiler generated names of tuples
+pub const TUPLE_NAME_PREFIX: &str = "__tuple_";

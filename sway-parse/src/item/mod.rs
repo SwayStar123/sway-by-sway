@@ -227,7 +227,7 @@ impl Parse for FnSignature {
     fn parse(parser: &mut Parser) -> ParseResult<FnSignature> {
         let visibility = parser.take();
         let fn_token = parser.parse()?;
-        let name = parser.parse()?;
+        let name: Ident = parser.parse()?;
         let generics = if parser.peek::<OpenAngleBracketToken>().is_some() {
             Some(parser.parse()?)
         } else {
